@@ -1,0 +1,113 @@
+/* SSPU Campus Navigator - Global Design Tokens & Typography */
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/static/fonts/onest-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/onest-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/static/fonts/onest-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/static/fonts/onest-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Onest';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/onest-700.woff2') format('woff2');
+}
+
+:root {
+  --ink: #05070a;
+  --ink-2: #0a0e12;
+  --ink-3: #121820;
+  --bone: #dfe7e0;
+  --bone-dim: #aab4ad;
+  --muted: #78837c;
+  --line: rgba(223, 231, 224, 0.13);
+  --line-strong: rgba(223, 231, 224, 0.28);
+  --vermilion: #e0231c;
+  --ember: #ff5a3c;
+  --gold: #c9a24a;
+  --card-bg: rgba(10, 14, 18, 0.88);
+  --panel-bg: rgba(7, 10, 14, 0.95);
+  --font-family: 'Onest', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.25s var(--ease);
+  --transition-smooth: 0.6s var(--ease);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--ink);
+  color: var(--bone);
+  font-family: var(--font-family);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Film Grain Overlay */
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Soft Ring Cursor on Desktop */
+@media (hover: hover) and (pointer: fine) {
+  .custom-cursor {
+    position: fixed;
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgba(223, 231, 224, 0.45);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s var(--ease), height 0.25s var(--ease), border-color 0.25s var(--ease), background-color 0.25s var(--ease), transform 0.08s linear;
+    z-index: 10000;
+  }
+  .custom-cursor.active {
+    width: 38px;
+    height: 38px;
+    border-color: var(--vermilion);
+    background-color: rgba(224, 35, 28, 0.12);
+  }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — SSPU Campus Navigator</title>
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="login-body">
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="brand-sspu">SSPU</span>
+      <span class="brand-sep">/</span>
+      <span class="brand-title">ADMIN LOGIN</span>
+    </div>
+
+    <!-- Demo Credentials Notice -->
+    <div class="demo-badge">
+      <div class="demo-badge-title">Symbi Skillympics 2026 · Demo Credentials</div>
+      <div class="demo-badge-creds">
+        <span>Username: <strong>admin</strong></span>
+        <span>Password: <strong>Admin@123</strong></span>
+      </div>
+    </div>
+
+    <form id="admin-login-form">
+      <div id="login-error-msg" class="login-error-alert" style="display: none;"></div>
+
+      <div class="form-group">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" id="username" name="username" class="form-control" value="admin" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" id="password" name="password" class="form-control" value="Admin@123" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn-primary" id="login-submit-btn">Sign In to Dashboard</button>
+    </form>
+
+    <div class="login-footer">
+      <a href="/app" class="back-link">&larr; Return to Campus Navigator</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('login-error-msg');
+      const btn = document.getElementById('login-submit-btn');
+      errBox.style.display = 'none';
+      btn.textContent = 'Authenticating...';
+      btn.disabled = true;
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        }).then(r => r.json());
+
+        if (res.success) {
+          window.location.href = '/admin';
+        } else {
+          errBox.textContent = res.error || 'Invalid username or password.';
+          errBox.style.display = 'block';
+          btn.textContent = 'Sign In to Dashboard';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        errBox.textContent = 'Server connection error. Please try again.';
+        errBox.style.display = 'block';
+        btn.textContent = 'Sign In to Dashboard';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

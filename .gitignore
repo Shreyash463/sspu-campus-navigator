@@ -1,0 +1,22 @@
+# Environments
+venv/
+.env
+
+# Planning and agent state
+.planning/
+.gsd/
+*.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Playwright cache
+.playwright/
+test-results/
+
+# OS files
+.DS_Store
+Thumbs.db

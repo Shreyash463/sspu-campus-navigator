@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — SSPU Campus Navigator</title>
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="brand-group">
+      <a href="/app" class="brand-logo">
+        <span class="brand-sspu">SSPU</span>
+        <span class="brand-sep">/</span>
+        <span class="brand-title">ADMIN DASHBOARD</span>
+      </a>
+    </div>
+
+    <div class="admin-nav-actions">
+      <span class="admin-user-pill">Logged in as: <strong id="admin-username-label">admin</strong></span>
+      <a href="/app" class="nav-btn-link" style="border: 1px solid var(--line);">View Public App</a>
+      <button type="button" class="btn-logout" id="admin-logout-btn">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <main class="admin-container">
+    <!-- Tabs Bar -->
+    <nav class="admin-tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="tab-facilities" role="tab" aria-selected="true">Facilities Directory</button>
+      <button type="button" class="tab-btn" data-tab="tab-paths" role="tab" aria-selected="false">Path Graph Manager</button>
+      <button type="button" class="tab-btn" data-tab="tab-audit" role="tab" aria-selected="false">Audit Logs (Last 20)</button>
+    </nav>
+
+    <!-- Tab 1: Facilities Directory -->
+    <section class="tab-content active" id="tab-facilities" role="tabpanel">
+      <div class="admin-toolbar">
+        <div class="toolbar-search">
+          <input type="text" id="admin-facility-search" class="form-control" placeholder="Search facilities by name, building, floor..." style="width: 280px;">
+          <select id="admin-category-filter" class="form-control" style="width: 180px;">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        <button type="button" class="btn-add" id="btn-open-add-modal">+ Add Facility</button>
+      </div>
+
+      <div class="data-table-wrapper">
+        <table class="data-table" id="facilities-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">ID</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Building</th>
+              <th>Floor</th>
+              <th>Operating Hours</th>
+              <th>Map (X, Y)</th>
+              <th style="width: 120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="facilities-table-body">
+            <tr><td colspan="8" style="text-align: center; color: var(--muted);">Loading facilities...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 2: Path Graph Manager -->
+    <section class="tab-content" id="tab-paths" role="tabpanel">
+      <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+        <div>
+          <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; color: var(--bone);">Campus Path Network Map</h3>
+          <div class="map-picker-box" id="paths-map-container" style="height: 500px;">
+            <!-- SVG Map preview with nodes and paths overlay -->
+            <svg id="paths-svg-map" viewBox="0 0 1000 700" style="width: 100%; height: 100%;"></svg>
+          </div>
+          <p class="picker-hint">Nodes represent walkway junctions and building entrances. Red lines represent active walkable pathways used by Dijkstra route algorithm.</p>
+        </div>
+
+        <div>
+          <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; color: var(--bone);">Add Path Connection</h3>
+          <form id="add-edge-form" style="background: var(--ink-2); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <div class="form-group">
+              <label class="form-label" for="edge-from-select">From Node</label>
+              <select id="edge-from-select" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edge-to-select">To Node</label>
+              <select id="edge-to-select" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edge-dist-input">Distance (Metres)</label>
+              <input type="number" id="edge-dist-input" class="form-control" step="0.1" min="1" placeholder="Auto-calculated or enter..." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edge-desc-input">Description / Directions</label>
+              <input type="text" id="edge-desc-input" class="form-control" placeholder="e.g. Walk along central walkway">
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 6px;">Add Connection</button>
+          </form>
+
+          <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 24px; margin-bottom: 12px; color: var(--bone);">Existing Edges (<span id="edges-count">0</span>)</h3>
+          <div style="max-height: 250px; overflow-y: auto; background: var(--ink-2); border: 1px solid var(--line); border-radius: 6px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>From &rarr; To</th>
+                  <th>Dist</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="edges-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Audit Logs -->
+    <section class="tab-content" id="tab-audit" role="tabpanel">
+      <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--bone);">Recent Administrative Actions</h3>
+        <button type="button" class="btn-action-edit" id="btn-refresh-audit">Refresh Logs</button>
+      </div>
+
+      <div class="data-table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">ID</th>
+              <th style="width: 180px;">Action</th>
+              <th>Details</th>
+              <th style="width: 180px;">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <tr><td colspan="4" style="text-align: center; color: var(--muted);">Loading audit records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Facility Add / Edit Modal -->
+  <div class="admin-modal" id="facility-modal" role="dialog" aria-modal="true" aria-labelledby="facility-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="facility-modal-title">Add New Facility</h3>
+        <button type="button" class="detail-close-btn" id="facility-modal-close">&times;</button>
+      </div>
+
+      <div id="modal-error-alert" class="login-error-alert" style="display: none;"></div>
+
+      <form id="facility-form">
+        <input type="hidden" id="facility-id" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="facility-name">Facility Name *</label>
+          <input type="text" id="facility-name" class="form-control" placeholder="e.g. Robotics & Automation Lab" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="facility-category">Category *</label>
+            <select id="facility-category" class="form-control" required>
+              <option value="Academic">Academic</option>
+              <option value="Laboratory">Laboratory</option>
+              <option value="Library">Library</option>
+              <option value="Administrative">Administrative</option>
+              <option value="Cafeteria">Cafeteria</option>
+              <option value="Auditorium & Events">Auditorium & Events</option>
+              <option value="Sports & Recreation">Sports & Recreation</option>
+              <option value="Student Services">Student Services</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="facility-building">Building *</label>
+            <select id="facility-building" class="form-control" required></select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="facility-floor">Floor *</label>
+            <select id="facility-floor" class="form-control" required>
+              <option value="Ground Floor">Ground Floor</option>
+              <option value="1st Floor">1st Floor</option>
+              <option value="2nd Floor">2nd Floor</option>
+              <option value="3rd Floor">3rd Floor</option>
+              <option value="Basement">Basement</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="facility-hours">Operating Hours *</label>
+            <input type="text" id="facility-hours" class="form-control" placeholder="e.g. Mon-Sat 09:00-17:00 or 24 Hours" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="facility-desc">Description *</label>
+          <textarea id="facility-desc" class="form-control" rows="3" placeholder="Detailed description of facility and services..." required></textarea>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="facility-contact">Contact (Optional)</label>
+            <input type="text" id="facility-contact" class="form-control" placeholder="e.g. +91 20 6793 5000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="facility-node">Path Graph Node (Optional)</label>
+            <select id="facility-node" class="form-control"></select>
+          </div>
+        </div>
+
+        <!-- Coordinates with Map Picker Button -->
+        <div class="form-group">
+          <label class="form-label">Map Location (X, Y) *</label>
+          <div class="coord-group">
+            <input type="number" id="facility-x" class="form-control" placeholder="X (0-1000)" step="1" min="0" max="1000" required>
+            <input type="number" id="facility-y" class="form-control" placeholder="Y (0-700)" step="1" min="0" max="700" required>
+            <button type="button" class="btn-pick-map" id="btn-trigger-map-picker">&#x1F4CD; Pick on Map</button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-action-edit" id="btn-cancel-facility">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px;" id="btn-save-facility">Save Facility</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interactive Map Picker Modal -->
+  <div class="admin-modal" id="map-picker-modal" role="dialog" aria-modal="true" aria-labelledby="picker-modal-title">
+    <div class="modal-card" style="width: 850px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="picker-modal-title">Click Map to Set Facility Coordinates</h3>
+        <button type="button" class="detail-close-btn" id="map-picker-close">&times;</button>
+      </div>
+
+      <div class="map-picker-box" id="picker-svg-container">
+        <!-- SVG Map cloned for picking -->
+      </div>
+      <p class="picker-hint">Click anywhere on the campus map to place the location pin. Coordinates will update automatically.</p>
+
+      <div class="modal-actions">
+        <div style="font-size: 12px; color: var(--gold); align-self: center;" id="picker-selected-coord-label">Selected: (None)</div>
+        <button type="button" class="btn-primary" style="width: auto; padding: 8px 18px;" id="btn-confirm-coords">Confirm Coordinates</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

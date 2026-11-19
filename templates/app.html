@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSPU Campus Navigator — Symbi Skillympics 2026</title>
+  <meta name="description" content="Interactive 3D & 2D campus navigation, facility directory, and shortest route finder for Symbiosis Skills and Professional University, Kiwale, Pune.">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="grain-overlay" aria-hidden="true"></div>
+  <div class="custom-cursor" id="custom-cursor" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <a href="/app" class="brand-logo" aria-label="SSPU Campus Navigator">
+          <span class="brand-sspu">SSPU</span>
+          <span class="brand-sep">/</span>
+          <span class="brand-title">CAMPUS NAVIGATOR</span>
+        </a>
+      </div>
+
+      <nav class="nav-actions">
+        <a href="/" class="nav-btn-link" id="intro-link">Intro</a>
+        <button type="button" class="nav-btn-link ask-btn" id="open-ask-btn" aria-label="Ask Campus Assistant">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+          Ask Campus
+        </button>
+        <button type="button" class="nav-btn-link" id="nav-route-toggle">Route Finder</button>
+        <a href="/admin" class="nav-btn-link admin-btn">Admin</a>
+      </nav>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="app-body">
+      <!-- Sidebar / Facility Directory -->
+      <aside class="sidebar-panel" id="sidebar-panel">
+        <div class="sidebar-section">
+          <div class="search-wrapper">
+            <input type="text" id="facility-search-input" class="search-input" placeholder="Search lab, office, department, hall..." autocomplete="off">
+            <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search">&times;</button>
+          </div>
+
+          <div class="filter-row">
+            <select id="building-filter-select" class="filter-select" aria-label="Filter by Building">
+              <option value="all">All Buildings (Entire Campus)</option>
+            </select>
+
+            <div class="category-chips" id="category-chips-container" role="group" aria-label="Filter by Category">
+              <button type="button" class="chip active" data-category="all">All Facilities</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" style="padding: 10px 20px;">
+          <div class="results-meta">
+            <span id="results-count-text">Loading directory...</span>
+            <button type="button" id="reset-filters-btn" class="reset-filters-link" style="display: none;">Reset Filters</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Facilities List -->
+        <div class="facilities-scroll-list" id="facilities-list-container" role="list">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Quick Access: Popular Places & Recently Viewed -->
+        <div class="quick-access-bar">
+          <div class="quick-title">Popular Places</div>
+          <div class="quick-pills" id="popular-places-pills">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="quick-title" style="margin-top: 8px;">Recently Viewed</div>
+          <div class="quick-pills" id="recently-viewed-pills">
+            <span style="color: var(--muted); font-size: 10px;">No recent places</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Map Viewport -->
+      <main class="map-viewport" id="map-viewport">
+        <!-- Map Controls -->
+        <div class="map-controls-group">
+          <button type="button" class="map-ctrl-btn" id="map-zoom-in" title="Zoom In" aria-label="Zoom In">+</button>
+          <button type="button" class="map-ctrl-btn" id="map-zoom-out" title="Zoom Out" aria-label="Zoom Out">&minus;</button>
+          <button type="button" class="map-ctrl-btn" id="map-reset-view" title="Reset View" aria-label="Reset View" style="font-size: 14px;">&#8635;</button>
+        </div>
+
+        <!-- Map Legend -->
+        <div class="map-legend-box" id="map-legend">
+          <div class="legend-title">Campus Legend</div>
+          <div class="legend-grid" id="legend-items">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Inline SVG Campus Map -->
+        <svg id="campus-svg-map" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="campus-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(223,231,224,0.025)" stroke-width="1"/>
+            </pattern>
+            <filter id="building-shadow" x="-10%" y="-10%" width="130%" height="130%">
+              <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+            </filter>
+          </defs>
+
+          <!-- Base Ground -->
+          <rect width="1000" height="700" class="map-bg"/>
+          <rect width="1000" height="700" fill="url(#campus-grid)"/>
+
+          <!-- Green Zones / Gardens -->
+          <polygon points="150,80 310,80 310,190 150,190" class="map-grass"/>
+          <polygon points="380,30 520,30 520,110 380,110" class="map-grass"/>
+          <polygon points="150,230 310,230 310,340 150,340" class="map-grass"/>
+          <polygon points="150,420 310,420 310,540 150,540" class="map-grass"/>
+          <polygon points="350,230 420,230 420,340 350,340" class="map-grass"/>
+          <circle cx="380" cy="280" r="28" fill="#0f261c" stroke="#1d4d38" stroke-width="1.5"/>
+
+          <!-- Sports Arena & Running Track -->
+          <g id="sports-zone">
+            <rect x="520" y="480" width="200" height="150" rx="40" class="map-sports-turf"/>
+            <rect x="535" y="495" width="170" height="120" rx="30" class="map-track-line"/>
+            <rect x="555" y="515" width="130" height="80" fill="#0e2a18" stroke="#25603a" stroke-width="1"/>
+            <!-- Football markings -->
+            <line x1="620" y1="515" x2="620" y2="595" stroke="rgba(223,231,224,0.4)" stroke-width="1"/>
+            <circle cx="620" cy="555" r="16" fill="none" stroke="rgba(223,231,224,0.4)" stroke-width="1"/>
+            <text x="620" y="618" class="map-building-label" fill="#78837c">ATHLETICS TURF & FOOTBALL ARENA</text>
+          </g>
+
+          <!-- Roads & Perimeter Walkways -->
+          <g id="campus-roads">
+            <!-- South Entrance Boulevard -->
+            <path d="M 60,650 L 380,650 L 380,120 L 890,120 L 890,650 L 520,650" class="map-road" stroke-width="24" fill="none"/>
+            <!-- Center Cross Concourse -->
+            <path d="M 120,430 L 880,430" class="map-road" stroke-width="16" fill="none"/>
+            <path d="M 120,260 L 880,260" class="map-road" stroke-width="16" fill="none"/>
+            <!-- Footpaths -->
+            <path d="M 120,640 L 230,560 L 230,480" class="map-footpath"/>
+            <path d="M 230,560 L 380,560" class="map-footpath"/>
+            <path d="M 380,560 L 580,540 L 820,530" class="map-footpath"/>
+            <path d="M 230,480 L 120,400" class="map-footpath"/>
+            <path d="M 380,420 L 440,400" class="map-footpath"/>
+            <path d="M 440,400 L 580,420 L 640,400" class="map-footpath"/>
+            <path d="M 380,280 L 250,310" class="map-footpath"/>
+            <path d="M 380,280 L 470,220" class="map-footpath"/>
+            <path d="M 470,220 L 690,220 L 860,220" class="map-footpath"/>
+            <path d="M 380,140 L 230,140" class="map-footpath"/>
+            <path d="M 380,140 L 450,90" class="map-footpath"/>
+            <path d="M 380,140 L 850,100" class="map-footpath"/>
+          </g>
+
+          <!-- Parking Areas -->
+          <rect x="790" y="60" width="130" height="55" rx="3" class="map-parking"/>
+          <text x="855" y="92" class="map-building-label" fill="#58636c">NORTH PARKING</text>
+          <rect x="230" y="615" width="110" height="45" rx="3" class="map-parking"/>
+          <text x="285" y="642" class="map-building-label" fill="#58636c">SOUTH PARKING</text>
+
+          <!-- Campus Buildings -->
+          <g id="campus-buildings">
+            <!-- Main Entrance Gate -->
+            <g class="building-block" data-building="Main Entrance & Plaza">
+              <rect x="90" y="625" width="60" height="30" rx="3" class="map-building" filter="url(#building-shadow)"/>
+              <text x="120" y="643" class="map-building-label">MAIN GATE</text>
+            </g>
+
+            <!-- Health & Medical Center -->
+            <g class="building-block" data-building="Health & Medical Center">
+              <rect x="90" y="360" width="65" height="70" rx="3" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="95" y="365" width="55" height="60" class="map-building-roof"/>
+              <text x="122" y="400" class="map-building-label">HEALTH CTR</text>
+            </g>
+
+            <!-- Central Administrative Block -->
+            <g class="building-block" data-building="Administrative Block">
+              <rect x="170" y="440" width="125" height="85" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="175" y="445" width="115" height="75" class="map-building-roof"/>
+              <text x="232" y="487" class="map-building-label">ADMINISTRATION</text>
+            </g>
+
+            <!-- Central Library Block -->
+            <g class="building-block" data-building="Central Library & Knowledge Center">
+              <rect x="170" y="250" width="125" height="85" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="175" y="255" width="115" height="75" class="map-building-roof"/>
+              <text x="232" y="297" class="map-building-label">CENTRAL LIBRARY</text>
+            </g>
+
+            <!-- Hostel Quadrangle -->
+            <g class="building-block" data-building="Hostel Quadrangle">
+              <rect x="170" y="90" width="125" height="90" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="175" y="95" width="115" height="80" class="map-building-roof"/>
+              <text x="232" y="140" class="map-building-label">HOSTEL QUAD</text>
+            </g>
+
+            <!-- Innovation & Incubation Hub -->
+            <g class="building-block" data-building="Innovation & Incubation Hub">
+              <rect x="390" y="45" width="120" height="65" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="395" y="50" width="110" height="55" class="map-building-roof"/>
+              <text x="450" y="82" class="map-building-label">INCUBATION HUB</text>
+            </g>
+
+            <!-- Engineering Block A -->
+            <g class="building-block" data-building="Engineering & Tech Block (A)">
+              <rect x="390" y="145" width="160" height="95" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="395" y="150" width="150" height="85" class="map-building-roof"/>
+              <text x="470" y="197" class="map-building-label">ENGINEERING (BLOCK A)</text>
+            </g>
+
+            <!-- Computing Hub Block B -->
+            <g class="building-block" data-building="Science & Computing Hub (B)">
+              <rect x="610" y="145" width="160" height="95" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="615" y="150" width="150" height="85" class="map-building-roof"/>
+              <text x="690" y="197" class="map-building-label">COMPUTING HUB (BLOCK B)</text>
+            </g>
+
+            <!-- Workshops Block C -->
+            <g class="building-block" data-building="Mechanical & Workshops Block (C)">
+              <rect x="800" y="145" width="130" height="120" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="805" y="150" width="120" height="110" class="map-building-roof"/>
+              <text x="865" y="210" class="map-building-label">WORKSHOPS (BLOCK C)</text>
+            </g>
+
+            <!-- Auditorium & Convention Hall -->
+            <g class="building-block" data-building="Auditorium & Convention Hall">
+              <rect x="390" y="335" width="140" height="95" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="395" y="340" width="130" height="85" class="map-building-roof"/>
+              <text x="460" y="387" class="map-building-label">AUDITORIUM</text>
+            </g>
+
+            <!-- Student Amenities & Cafeteria -->
+            <g class="building-block" data-building="Student Amenities & Cafeteria">
+              <rect x="590" y="335" width="140" height="95" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="595" y="340" width="130" height="85" class="map-building-roof"/>
+              <text x="660" y="387" class="map-building-label">FOOD COURT & AMENITIES</text>
+            </g>
+
+            <!-- Sports Complex & Gymnasium -->
+            <g class="building-block" data-building="Sports Complex & Stadium">
+              <rect x="760" y="470" width="160" height="110" rx="4" class="map-building" filter="url(#building-shadow)"/>
+              <rect x="765" y="475" width="150" height="100" class="map-building-roof"/>
+              <text x="845" y="530" class="map-building-label">SPORTS COMPLEX</text>
+            </g>
+          </g>
+
+          <!-- Dynamic Path Network Overlay (for Dijkstra visual path) -->
+          <g id="map-paths-layer"></g>
+
+          <!-- Dynamic Route Polyline Layer -->
+          <g id="map-route-layer"></g>
+
+          <!-- Dynamic Markers Layer -->
+          <g id="map-markers-layer"></g>
+
+          <!-- Dynamic Tooltip Layer -->
+          <g id="map-tooltip-layer"></g>
+        </svg>
+
+        <!-- Floating Facility Detail Card -->
+        <article class="detail-card-panel" id="detail-card-panel" aria-label="Facility Details">
+          <button type="button" class="detail-close-btn" id="detail-close-btn" aria-label="Close Details">&times;</button>
+          <div class="detail-header-eyebrow">
+            <span class="badge-tag" id="detail-category-badge">Category</span>
+            <span class="facility-item-status" id="detail-live-status">
+              <span class="status-indicator-dot"></span>
+              <span id="detail-status-text">Status</span>
+            </span>
+          </div>
+
+          <h2 class="detail-title" id="detail-name">Facility Name</h2>
+
+          <div class="detail-meta-list">
+            <div class="detail-meta-row">
+              <span class="detail-meta-label">Building</span>
+              <span id="detail-building">Building Name</span>
+            </div>
+            <div class="detail-meta-row">
+              <span class="detail-meta-label">Floor</span>
+              <span id="detail-floor">Floor Level</span>
+            </div>
+            <div class="detail-meta-row">
+              <span class="detail-meta-label">Hours</span>
+              <span id="detail-hours">Operating Hours</span>
+            </div>
+            <div class="detail-meta-row" id="detail-contact-row">
+              <span class="detail-meta-label">Contact</span>
+              <span id="detail-contact">Contact Details</span>
+            </div>
+          </div>
+
+          <p class="detail-desc" id="detail-description">Description of this facility...</p>
+
+          <div class="detail-actions-row">
+            <button type="button" class="btn-action-primary" id="btn-directions-to">Directions To Here</button>
+            <button type="button" class="btn-action-secondary" id="btn-directions-from">From Here</button>
+          </div>
+        </article>
+
+        <!-- Route Guidance Drawer -->
+        <section class="route-drawer-panel" id="route-drawer-panel" aria-label="Route Finder">
+          <div class="route-panel-title">
+            <span>Route Guidance</span>
+            <button type="button" class="detail-close-btn" id="route-close-btn" aria-label="Close Route">&times;</button>
+          </div>
+
+          <div class="route-inputs-box">
+            <div class="route-input-group">
+              <span class="route-node-icon" title="Origin"></span>
+              <select id="route-from-select" class="route-select" aria-label="Origin Facility">
+                <option value="">Choose origin...</option>
+              </select>
+            </div>
+            <div class="route-input-group">
+              <span class="route-node-icon dest" title="Destination"></span>
+              <select id="route-to-select" class="route-select" aria-label="Destination Facility">
+                <option value="">Choose destination...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="route-summary-card" id="route-summary-card" style="display: none;">
+            <div class="route-stat-item">
+              <b id="route-dist-val">0 m</b>
+              <span>Distance</span>
+            </div>
+            <div class="route-stat-item">
+              <b id="route-time-val">0 min</b>
+              <span>Walking Time</span>
+            </div>
+          </div>
+
+          <div class="route-steps-scroll" id="route-steps-container">
+            <div style="font-size: 11px; color: var(--muted); text-align: center; padding: 12px;">Select an origin and destination to compute the shortest walking route.</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Ask Campus Assistant Modal -->
+  <div class="ask-ai-modal" id="ask-ai-modal" role="dialog" aria-modal="true" aria-labelledby="ask-ai-title">
+    <div class="ask-ai-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="ask-ai-title" style="font-size: 16px; font-weight: 700; color: var(--bone); text-transform: uppercase; letter-spacing: 0.1em;">Ask Campus Assistant</h3>
+        <button type="button" class="detail-close-btn" id="close-ask-modal-btn" aria-label="Close Modal">&times;</button>
+      </div>
+      <p style="font-size: 12px; color: var(--bone-dim);">Ask natural language questions like <em>"Where is the AI Lab?"</em> or <em>"Is the library open right now?"</em></p>
+      
+      <form id="ask-ai-form">
+        <input type="text" id="ask-question-input" class="ask-input" placeholder="Type your question..." autocomplete="off">
+        <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+          <button type="submit" class="btn-action-primary" style="flex: 0 0 120px;" id="ask-submit-btn">Search</button>
+        </div>
+      </form>
+
+      <div class="ask-answer-box" id="ask-answer-box">
+        <p id="ask-answer-text"></p>
+        <div id="ask-matched-pills" style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
