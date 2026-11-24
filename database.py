@@ -8,10 +8,21 @@ import sqlite3
 import os
 import re
 from datetime import datetime
+import shutil
 from werkzeug.security import generate_password_hash, check_password_hash
 from seed_data import CATEGORIES, BUILDINGS, FACILITIES, NODES, EDGES
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "campus.db")
+if os.environ.get("VERCEL"):
+    TMP_DB = "/tmp/campus.db"
+    SRC_DB = os.path.join(os.path.dirname(__file__), "campus.db")
+    if not os.path.exists(TMP_DB) and os.path.exists(SRC_DB):
+        try:
+            shutil.copy2(SRC_DB, TMP_DB)
+        except Exception:
+            pass
+    DB_PATH = TMP_DB if os.path.exists(TMP_DB) else SRC_DB
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), "campus.db")
 
 DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 DAY_INDEX = {day: idx for idx, day in enumerate(DAY_NAMES)}
