@@ -461,6 +461,7 @@
 
       // Pin marker circle
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('class', 'marker-circle');
       circle.setAttribute('cx', 0);
       circle.setAttribute('cy', 0);
       circle.setAttribute('r', 8);
@@ -520,13 +521,45 @@
     state.selectedFacility = f;
     addToRecentlyViewed(f);
 
-    // Update list selection highlight
+    // Update list selection highlight and scroll card into view with animated flash
     document.querySelectorAll('.facility-card-item').forEach(el => {
-      el.classList.toggle('selected', parseInt(el.getAttribute('data-id'), 10) === id);
+      const isMatch = parseInt(el.getAttribute('data-id'), 10) === id;
+      el.classList.toggle('selected', isMatch);
+      if (isMatch) {
+        el.classList.add('flash-highlight');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => el.classList.remove('flash-highlight'), 850);
+      }
     });
 
     // Re-render markers to update active pulse
     renderMarkers(getCurrentFilteredFacilities());
+
+    // Trigger visual ripple on the selected marker
+    const activeMarkerGroup = document.querySelector(`.marker-pin[data-id="${id}"]`);
+    if (activeMarkerGroup) {
+      const ripple = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      ripple.setAttribute('class', 'marker-click-ripple');
+      ripple.setAttribute('cx', 0);
+      ripple.setAttribute('cy', 0);
+      ripple.setAttribute('fill', 'none');
+      ripple.setAttribute('stroke', getCategoryColor(f.category));
+      ripple.setAttribute('stroke-width', '3');
+      activeMarkerGroup.appendChild(ripple);
+      setTimeout(() => {
+        if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+      }, 700);
+    }
+
+    // Highlight corresponding building footprint
+    document.querySelectorAll('.building-block').forEach(bBlock => {
+      const bldName = bBlock.getAttribute('data-building') || '';
+      const hl = bBlock.querySelector('.map-building-highlight');
+      if (hl) {
+        const matches = bldName && (f.building.toLowerCase().includes(bldName.toLowerCase()) || bldName.toLowerCase().includes(f.building.toLowerCase()));
+        hl.classList.toggle('active', Boolean(matches));
+      }
+    });
 
     // Center map on marker
     if (shouldCenter && window.panMapTo) {
@@ -671,11 +704,27 @@
     bgLine.setAttribute('stroke-linejoin', 'round');
     els.mapRouteLayer.appendChild(bgLine);
 
-    // Polyline dashed active line
+    // Polyline dashed active line with drawing animation
     const activeLine = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     activeLine.setAttribute('class', 'route-polyline');
     activeLine.setAttribute('points', pointsStr);
     els.mapRouteLayer.appendChild(activeLine);
+
+    try {
+      const len = activeLine.getTotalLength ? activeLine.getTotalLength() : 800;
+      activeLine.style.strokeDasharray = `${len}`;
+      activeLine.style.strokeDashoffset = `${len}`;
+      activeLine.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+      requestAnimationFrame(() => {
+        activeLine.style.strokeDashoffset = '0';
+        setTimeout(() => {
+          activeLine.style.strokeDasharray = '8, 6';
+          activeLine.style.transition = 'none';
+        }, 850);
+      });
+    } catch (e) {
+      // Fallback to infinite routeDash
+    }
 
     // Origin marker circle
     const startPt = coords[0];
