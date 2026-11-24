@@ -20,42 +20,33 @@
     pickedCoords: { x: null, y: null }
   };
 
-  // Base SVG markup template for maps
+  // Base SVG markup template for maps (Authentic SSPU Scale Model Top View)
   const baseMapSvgContent = `
-    <defs>
-      <pattern id="admin-campus-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(223,231,224,0.03)" stroke-width="1"/>
-      </pattern>
-    </defs>
-    <rect width="1000" height="700" fill="#070b0f"/>
-    <rect width="1000" height="700" fill="url(#admin-campus-grid)"/>
-    <!-- Buildings -->
-    <rect x="90" y="625" width="60" height="30" rx="3" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="120" y="643" fill="#aab4ad" font-size="9" text-anchor="middle">MAIN GATE</text>
-    <rect x="90" y="360" width="65" height="70" rx="3" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="122" y="400" fill="#aab4ad" font-size="9" text-anchor="middle">HEALTH CTR</text>
-    <rect x="170" y="440" width="125" height="85" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="232" y="487" fill="#aab4ad" font-size="9" text-anchor="middle">ADMINISTRATION</text>
-    <rect x="170" y="250" width="125" height="85" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="232" y="297" fill="#aab4ad" font-size="9" text-anchor="middle">CENTRAL LIBRARY</text>
-    <rect x="170" y="90" width="125" height="90" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="232" y="140" fill="#aab4ad" font-size="9" text-anchor="middle">HOSTEL QUAD</text>
-    <rect x="390" y="45" width="120" height="65" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="450" y="82" fill="#aab4ad" font-size="9" text-anchor="middle">INCUBATION HUB</text>
-    <rect x="390" y="145" width="160" height="95" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="470" y="197" fill="#aab4ad" font-size="9" text-anchor="middle">ENGINEERING (BLOCK A)</text>
-    <rect x="610" y="145" width="160" height="95" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="690" y="197" fill="#aab4ad" font-size="9" text-anchor="middle">COMPUTING HUB (BLOCK B)</text>
-    <rect x="800" y="145" width="130" height="120" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="865" y="210" fill="#aab4ad" font-size="9" text-anchor="middle">WORKSHOPS (BLOCK C)</text>
-    <rect x="390" y="335" width="140" height="95" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="460" y="387" fill="#aab4ad" font-size="9" text-anchor="middle">AUDITORIUM</text>
-    <rect x="590" y="335" width="140" height="95" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="660" y="387" fill="#aab4ad" font-size="9" text-anchor="middle">FOOD COURT & AMENITIES</text>
-    <rect x="760" y="470" width="160" height="110" rx="4" fill="#151d26" stroke="#334455" stroke-width="1.5"/>
-    <text x="845" y="530" fill="#aab4ad" font-size="9" text-anchor="middle">SPORTS COMPLEX</text>
-    <rect x="520" y="480" width="200" height="150" rx="40" fill="#0c2014" stroke="#1a4028" stroke-width="1.5"/>
-    <text x="620" y="618" fill="#78837c" font-size="9" text-anchor="middle">ATHLETICS TURF</text>
+    <image href="/static/img/campus_map_base.webp" x="0" y="0" width="1000" height="563" preserveAspectRatio="none"/>
+    <rect width="1000" height="563" fill="rgba(5, 7, 10, 0.28)"/>
+    <!-- Buildings Outlines for Visual Reference -->
+    <polygon points="520,455 640,455 640,530 520,530" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="580" y="525" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">MAIN GATE</text>
+    <polygon points="630,295 735,295 735,385 630,385" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="682" y="325" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">ADMIN</text>
+    <polygon points="525,120 625,120 625,185 525,185" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="575" y="142" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">LIBRARY</text>
+    <polygon points="335,315 445,315 445,405 335,405" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="390" y="345" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">AUDITORIUM</text>
+    <polygon points="560,260 645,260 645,325 560,325" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="602" y="280" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">CAFETERIA</text>
+    <polygon points="305,140 415,140 415,245 305,245" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="360" y="162" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">ENGG (A)</text>
+    <polygon points="485,55 595,55 595,135 485,135" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="540" y="78" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">COMPUTING (B)</text>
+    <polygon points="780,175 915,175 915,275 780,275" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="848" y="198" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">WORKSHOPS (C)</text>
+    <polygon points="120,165 225,165 225,275 120,275" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="172" y="195" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">HOSTELS</text>
+    <polygon points="190,335 285,335 285,415 190,415" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="238" y="360" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">HEALTH CTR</text>
+    <polygon points="755,365 915,365 915,485 755,485" fill="none" stroke="rgba(201,162,74,0.4)" stroke-width="1.5"/>
+    <text x="835" y="392" fill="#dfe7e0" font-size="8.5" font-weight="700" text-anchor="middle">SPORTS</text>
   `;
 
   async function checkAuth() {
@@ -375,7 +366,7 @@
 
   function openMapPicker() {
     pickerContainer.innerHTML = `
-      <svg id="picker-svg" viewBox="0 0 1000 700" style="width: 100%; height: 100%;">
+      <svg id="picker-svg" viewBox="0 0 1000 563" style="width: 100%; height: 100%;">
         ${baseMapSvgContent}
         <g id="picker-pin-layer"></g>
       </svg>
@@ -395,10 +386,10 @@
     svg.addEventListener('click', (e) => {
       const rect = svg.getBoundingClientRect();
       const clickX = Math.round(((e.clientX - rect.left) / rect.width) * 1000);
-      const clickY = Math.round(((e.clientY - rect.top) / rect.height) * 700);
+      const clickY = Math.round(((e.clientY - rect.top) / rect.height) * 563);
 
       const boundedX = Math.max(10, Math.min(990, clickX));
-      const boundedY = Math.max(10, Math.min(690, clickY));
+      const boundedY = Math.max(10, Math.min(550, clickY));
 
       setPickerPin(boundedX, boundedY);
     });

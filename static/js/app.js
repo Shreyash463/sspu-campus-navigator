@@ -168,7 +168,7 @@
   // Map View Pan & Zoom
   // -------------------------------------------------------------
   function setupPanZoom() {
-    let viewBox = { x: 0, y: 0, w: 1000, h: 700 };
+    let viewBox = { x: 0, y: 0, w: 1000, h: 563 };
 
     function updateViewBox() {
       els.svgMap.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
@@ -184,14 +184,14 @@
     });
 
     els.resetViewBtn.addEventListener('click', () => {
-      viewBox = { x: 0, y: 0, w: 1000, h: 700 };
+      viewBox = { x: 0, y: 0, w: 1000, h: 563 };
       updateViewBox();
       showToast('Map view reset');
     });
 
     function zoomAtCenter(factor) {
       const newW = Math.max(250, Math.min(1400, viewBox.w * factor));
-      const newH = Math.max(175, Math.min(980, viewBox.h * factor));
+      const newH = Math.max(140, Math.min(788, viewBox.h * factor));
       const dx = (viewBox.w - newW) / 2;
       const dy = (viewBox.h - newH) / 2;
       viewBox.x += dx;
@@ -237,8 +237,8 @@
 
     // Smooth Pan to Target (X, Y)
     window.panMapTo = function(targetX, targetY) {
-      const targetW = 600;
-      const targetH = 420;
+      const targetW = 550;
+      const targetH = 310;
       const startX = viewBox.x;
       const startY = viewBox.y;
       const startW = viewBox.w;
@@ -562,25 +562,29 @@
 
     // Wire Directions buttons
     els.btnDirectionsTo.onclick = () => {
+      els.detailCard.classList.remove('active');
       openRouteDrawer();
       els.routeToSelect.value = f.id;
       state.route.toId = f.id;
-      if (state.route.fromId && state.route.fromId !== state.route.toId) {
-        calculateRoute();
-      } else {
-        showToast(`Set destination to ${f.name}. Choose an origin.`);
+      if (!state.route.fromId || state.route.fromId === f.id) {
+        const defaultFrom = (f.id === 1) ? 8 : 1;
+        state.route.fromId = defaultFrom;
+        els.routeFromSelect.value = defaultFrom;
       }
+      calculateRoute();
     };
 
     els.btnDirectionsFrom.onclick = () => {
+      els.detailCard.classList.remove('active');
       openRouteDrawer();
       els.routeFromSelect.value = f.id;
       state.route.fromId = f.id;
-      if (state.route.toId && state.route.fromId !== state.route.toId) {
-        calculateRoute();
-      } else {
-        showToast(`Set origin to ${f.name}. Choose a destination.`);
+      if (!state.route.toId || state.route.toId === f.id) {
+        const defaultTo = (f.id === 8) ? 3 : 8;
+        state.route.toId = defaultTo;
+        els.routeToSelect.value = defaultTo;
       }
+      calculateRoute();
     };
   }
 
@@ -772,6 +776,14 @@
       if (e.target === els.askModal) els.askModal.classList.remove('active');
     });
 
+    // Handle quick question suggestion chips
+    document.querySelectorAll('.ask-chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        els.askInput.value = btn.getAttribute('data-query') || btn.textContent.trim();
+        els.askForm.dispatchEvent(new Event('submit'));
+      });
+    });
+
     els.askForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const question = els.askInput.value.trim();
@@ -905,6 +917,10 @@
   // -------------------------------------------------------------
   function showToast(msg) {
     if (!els.toastContainer) return;
+    // Clear any existing toast so notifications never stack
+    while (els.toastContainer.firstChild) {
+      els.toastContainer.removeChild(els.toastContainer.firstChild);
+    }
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.textContent = msg;
@@ -913,7 +929,7 @@
       toast.style.opacity = '0';
       toast.style.transition = 'opacity 0.3s ease';
       setTimeout(() => toast.remove(), 300);
-    }, 2800);
+    }, 2400);
   }
 
   function escapeHTML(str) {

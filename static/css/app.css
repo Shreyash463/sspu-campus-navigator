@@ -497,15 +497,19 @@
 .detail-card-panel {
   position: absolute;
   top: 20px;
-  left: 20px;
-  width: 340px;
+  right: 20px;
+  left: auto;
+  width: 350px;
+  max-width: calc(100vw - 340px);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
   background: var(--card-bg);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 20px;
-  z-index: 30;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+  z-index: 40;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
   display: none;
   flex-direction: column;
   gap: 12px;
@@ -632,16 +636,19 @@
 .route-drawer-panel {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
+  left: auto;
   width: 360px;
-  max-height: calc(100vh - 120px);
+  max-width: calc(100vw - 340px);
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
   background: var(--card-bg);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 18px;
-  z-index: 35;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+  z-index: 45;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
   display: none;
   flex-direction: column;
   gap: 12px;
@@ -830,14 +837,57 @@
 .map-bg { fill: #070b0f; }
 .map-grass { fill: #0a130f; stroke: #0f1d17; stroke-width: 1; }
 .map-road { fill: #131a22; stroke: #1e2833; stroke-width: 1; }
-.map-footpath { fill: none; stroke: #263340; stroke-width: 3; stroke-dasharray: 4, 3; }
+.map-footpath {
+  fill: none;
+  stroke: rgba(201, 162, 74, 0.45);
+  stroke-width: 2.5;
+  stroke-dasharray: 5, 3;
+}
+.map-building-highlight {
+  fill: rgba(224, 35, 28, 0.08);
+  stroke: rgba(224, 35, 28, 0.35);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+.map-building-highlight:hover {
+  fill: rgba(224, 35, 28, 0.25);
+  stroke: var(--vermilion);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px rgba(224, 35, 28, 0.8));
+}
 .map-building { fill: #151d26; stroke: #334455; stroke-width: 1.5; transition: all 0.3s var(--ease); }
 .map-building:hover { fill: #1d2733; stroke: var(--bone-dim); }
 .map-building-roof { fill: #1a2430; stroke: #2a3a4c; stroke-width: 1; }
-.map-building-label { fill: #aab4ad; font-family: 'Onest', sans-serif; font-size: 9px; font-weight: 600; text-anchor: middle; pointer-events: none; }
+.map-building-label {
+  fill: #dfe7e0;
+  font-family: 'Onest', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-anchor: middle;
+  text-shadow: 0 1px 4px #000, 0 0 8px rgba(0,0,0,0.9);
+  pointer-events: none;
+}
 .map-sports-turf { fill: #0c2014; stroke: #1a4028; stroke-width: 1.5; }
 .map-track-line { fill: none; stroke: #8a3028; stroke-width: 8; opacity: 0.8; }
 .map-parking { fill: #0d1217; stroke: #1a222a; stroke-width: 1; }
+
+.ask-chip-btn {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  color: var(--bone-dim);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.ask-chip-btn:hover {
+  border-color: var(--vermilion);
+  color: var(--bone);
+  background: rgba(224, 35, 28, 0.15);
+}
 
 /* SVG Markers Layer */
 .marker-pin {

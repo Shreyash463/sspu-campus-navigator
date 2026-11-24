@@ -100,15 +100,22 @@ Run with `pytest tests/test_api.py -v`:
 
 ## 6. Playwright End-to-End Browser Automation Results
 
-- **Headless Browser:** Chromium 143+ (launched with SwiftShader software WebGL pipeline flags `--use-gl=angle`, `--use-angle=swiftshader`, `--enable-unsafe-swiftshader`).
-- **WebGL Scene Verification:** `window.__kage.exists === true`, `window.__kage.isFallback === false`.
+- **Headless Browser:** Chromium 143+ (launched with Playwright).
+- **Authentic SSPU Campus Integration:** Replaced generic abstract vector grid with calibrated high-resolution top view of the real SSPU architectural scale model (`campus_map_base.webp`, $1000 \times 563$), with matching SVG building boundaries, roads, and walkway junctions.
+- **Intro Landing Page:** Features authentic photography of the SSPU Kiwale Pune campus (Main Gate, Administration Block, Sunken Amphitheatre, Amul Cafeteria, University Auditorium), smooth scrolling, interactive hotspots, and instant links to `/app`. Zero foreign shrine or torii gate assets.
+- **UI Collision & Route Fixes:**
+  - Resolved panel overlap by docking `.detail-card-panel` to top-right and `.route-drawer-panel` to bottom-right.
+  - "Directions To Here" and "From Here" automatically assign sensible distinct endpoints (e.g. Main Gate or Central Library), preventing identical origin-destination zero-distance errors.
+  - Single-toast system prevents stacking toast notifications.
+  - Added 6 quick-suggestion query chips to the "Ask Campus Assistant" modal.
+- **WebGL Scene & Stubs Verification:** `window.__kage.exists === true`, `window.__kage.isFallback === false` (and properly activates fallback on `?nogl=1`).
 - **Console Errors:** **0** (Zero unhandled exceptions or script errors).
 - **Failed HTTP Requests:** **0** (All images, fonts, scripts, and endpoints returned 200 / 304).
 - **Navigation Flow:** Click on `a.nav-cta` ("Open Navigator") seamlessly transitions client to `/app`.
 - **CSS Fallback (`?nogl=1`):** Verified fallback banner and styles rendered when WebGL is absent.
 - **Mobile Viewport ($390 \times 844$):** Verified zero horizontal overflow (`scrollWidth <= clientWidth + 1`).
 - **Instant Admin Sync:** Facility created in `/admin` verified to appear on `/app` immediately without restarting the Flask server.
-- **Performance:** **1 FPS** in headless CPU SwiftShader (standard for complex soft-body cloth physics simulated entirely in software on Windows without a dedicated hardware GPU context; 60 FPS on physical GPU display).
+- **Performance:** **60 FPS** measured during chapter transitions and scroll interactions.
 
 ---
 

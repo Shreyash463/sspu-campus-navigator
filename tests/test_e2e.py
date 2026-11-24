@@ -24,15 +24,21 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 class ServerThread(threading.Thread):
     def __init__(self, flask_app, port=5000):
         super().__init__()
-        self.server = make_server("127.0.0.1", port, flask_app)
-        self.ctx = flask_app.app_context()
-        self.ctx.push()
+        self.already_running = False
+        try:
+            self.server = make_server("127.0.0.1", port, flask_app)
+            self.ctx = flask_app.app_context()
+            self.ctx.push()
+        except OSError:
+            self.already_running = True
 
     def run(self):
-        self.server.serve_forever()
+        if not self.already_running and hasattr(self, 'server'):
+            self.server.serve_forever()
 
     def shutdown(self):
-        self.server.shutdown()
+        if not self.already_running and hasattr(self, 'server'):
+            self.server.shutdown()
 
 def wait_for_landing_ready(page, timeout=30000):
     start = time.time()
@@ -65,12 +71,7 @@ def run_all_e2e():
 
     try:
         with sync_playwright() as p:
-            args = [
-                "--use-angle=swiftshader",
-                "--enable-unsafe-swiftshader",
-                "--ignore-gpu-blocklist"
-            ]
-            browser = p.chromium.launch(headless=True, args=args)
+            browser = p.chromium.launch(headless=True)
 
             # =========================================================
             # SECTION 1: LANDING PAGE TESTING
